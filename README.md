@@ -32,4 +32,4 @@ git push
 
 | 姓名 | GitHub | 贡献 |
 |------|--------|------|
-| 马贵江 | [@youmaguijiang112](https://github.com/youmaguijiang112) | Flutter 界面个性化设计与开发 |
+| mingxi | [@youmaguijiang112](https://github.com/youmaguijiang112) | Flutter 界面个性化设计与开发 |
