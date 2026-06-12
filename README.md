@@ -27,3 +27,13 @@ git push
 ```
 
 课堂提交运行截图和 GitHub 提交记录截图。
+
+## 贡献者
+
+| 姓名 | GitHub | 贡献 |
+|------|--------|------|
+| mingxi | [@youmaguijiang112](https://github.com/youmaguijiang112) | Flutter 界面个性化设计与开发 |
+| 马梓杭 | | 暗黑科技主题个性化 |
+| 朱吉谦 | | 简洁卡片布局个性化 |
+| 刘子轩 | | 渐变脉冲动画个性化 |
+| 刘锦耀 | [@lyq-bx](https://github.com/lyq-bx) | 温暖书卷风阅读追踪个性化 |
