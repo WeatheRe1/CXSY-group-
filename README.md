@@ -36,4 +36,4 @@ git push
 | 马梓杭 | | 暗黑科技主题个性化 |
 | 朱吉谦 | | 简洁卡片布局个性化 |
 | 刘子轩 | | 渐变脉冲动画个性化 |
-| 刘锦耀 | [@lyq-bx](https://github.com/lyq-bx) | 温暖书卷风阅读追踪个性化 |
+| 刘锦耀 | [@usedare](https://github.com/usedare) | 温暖书卷风阅读追踪个性化 |
