@@ -1,397 +1,711 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const InnovationHelloApp());
+  runApp(const BookTrackerApp());
 }
 
-class InnovationHelloApp extends StatelessWidget {
-  const InnovationHelloApp({super.key});
+// ============================================================
+// App Root
+// ============================================================
+
+class BookTrackerApp extends StatelessWidget {
+  const BookTrackerApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: '第14周 · Flutter 打卡',
+      title: '阅读追踪 - 刘锦耀',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
+        useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF6C63FF),
+          seedColor: const Color(0xFF8D6E63),
           brightness: Brightness.light,
         ),
-        useMaterial3: true,
+        scaffoldBackgroundColor: const Color(0xFFFDF6EC),
         fontFamily: 'Roboto',
+        cardTheme: const CardThemeData(
+          color: Colors.white,
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(16)),
+          ),
+        ),
       ),
-      home: const HelloHomePage(),
+      home: const ReadingHomePage(),
     );
   }
 }
 
-class HelloHomePage extends StatefulWidget {
-  const HelloHomePage({super.key});
+// ============================================================
+// Color Palette
+// ============================================================
 
-  @override
-  State<HelloHomePage> createState() => _HelloHomePageState();
+class AppColors {
+  static const warmBrown = Color(0xFF8D6E63);
+  static const deepBrown = Color(0xFF3E2723);
+  static const lightBrown = Color(0xFF6D4C41);
+  static const gold = Color(0xFFFFB300);
+  static const cream = Color(0xFFFDF6EC);
+  static const parchment = Color(0xFFF5ECD7);
+  static const amber100 = Color(0xFFFFECB3);
+  static const amber700 = Color(0xFFFF8F00);
+
+  static const bookColors = [
+    Color(0xFFC62828), // 红
+    Color(0xFF1565C0), // 蓝
+    Color(0xFF2E7D32), // 绿
+    Color(0xFF6A1B9A), // 紫
+    Color(0xFFE65100), // 橙
+    Color(0xFF00838F), // 青
+    Color(0xFFAD1457), // 玫红
+    Color(0xFF4E342E), // 深棕
+    Color(0xFF283593), // 靛蓝
+    Color(0xFF558B2F), // 草绿
+  ];
 }
 
-class _HelloHomePageState extends State<HelloHomePage>
-    with SingleTickerProviderStateMixin {
-  int completedTasks = 0;
-  late AnimationController _controller;
-  late Animation<double> _scaleAnim;
+// ============================================================
+// Main Home Page
+// ============================================================
 
-  void finishOneTask() {
-    setState(() {
-      completedTasks += 1;
-    });
-    _controller.forward(from: 0);
-  }
+class ReadingHomePage extends StatefulWidget {
+  const ReadingHomePage({super.key});
+
+  @override
+  State<ReadingHomePage> createState() => _ReadingHomePageState();
+}
+
+class _ReadingHomePageState extends State<ReadingHomePage>
+    with SingleTickerProviderStateMixin {
+  int _booksRead = 0;
+  static const int _goal = 10;
+
+  late AnimationController _scaleController;
+  late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
+    _scaleController = AnimationController(
       duration: const Duration(milliseconds: 300),
+      vsync: this,
     );
-    _scaleAnim = Tween<double>(begin: 1.0, end: 1.18).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.elasticOut),
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
+      CurvedAnimation(parent: _scaleController, curve: Curves.elasticOut),
     );
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _scaleController.dispose();
     super.dispose();
   }
 
-  String _motivationText() {
-    if (completedTasks == 0) return '准备好了吗？点击下方按钮开始打卡 🚀';
-    if (completedTasks < 3) return '继续努力，势头不错！💪';
-    if (completedTasks < 6) return '你今天真的很拼！🔥';
-    return '哇！今天的你无可挑剔 ✨';
+  void _onBookCompleted() {
+    if (_booksRead >= _goal) return;
+    setState(() => _booksRead++);
+    _scaleController.forward(from: 0);
+
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          _booksRead >= _goal
+              ? '恭喜！目标达成！你是最棒的阅读者！'
+              : '又读完一本！继续加油！已读 $_booksRead 本',
+        ),
+        backgroundColor:
+            _booksRead >= _goal ? AppColors.gold : AppColors.warmBrown,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  String _getMotivationText() {
+    if (_booksRead >= 10) return '目标达成！你是阅读之星！';
+    if (_booksRead >= 8) return '即将完成目标，冲刺！';
+    if (_booksRead >= 5) return '半程达成！阅读是最好的习惯！';
+    if (_booksRead >= 3) return '不错！你已经读了$_booksRead本，继续加油！';
+    if (_booksRead >= 1) return '好的开始！坚持阅读，你会收获更多！';
+    return '书海无涯，开始你的阅读之旅吧！';
+  }
+
+  Map<String, String> _getQuote() {
+    final quotes = [
+      {'text': '读书破万卷，下笔如有神。', 'author': '杜甫'},
+      {'text': '书籍是人类进步的阶梯。', 'author': '高尔基'},
+      {'text': '读万卷书，行万里路。', 'author': '董其昌'},
+      {
+        'text': 'The more that you read, the more things you will know.',
+        'author': 'Dr. Seuss',
+      },
+    ];
+    return quotes[_booksRead % quotes.length];
   }
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F3FF),
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: const Color(0xFF6C63FF),
-        centerTitle: true,
-        leading: const Padding(
-          padding: EdgeInsets.all(10),
-          child: Icon(Icons.auto_awesome, color: Colors.white),
-        ),
-        title: const Text(
-          '创新实验 · 第14周',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w700,
-            fontSize: 18,
-            letterSpacing: 1.2,
-          ),
-        ),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.all(10),
-            child: Icon(Icons.notifications_none_rounded, color: Colors.white),
-          ),
-        ],
-      ),
+      floatingActionButton: _booksRead < _goal
+          ? FloatingActionButton.extended(
+              onPressed: _onBookCompleted,
+              backgroundColor: AppColors.warmBrown,
+              foregroundColor: Colors.white,
+              icon: const Icon(Icons.auto_stories),
+              label: const Text('读完一本', style: TextStyle(fontSize: 16)),
+            )
+          : null,
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // ── 顶部 Banner 卡片 ──
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 24),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF6C63FF), Color(0xFF9C8FFF)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF6C63FF).withOpacity(0.35),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  const Icon(Icons.rocket_launch_rounded,
-                      size: 56, color: Colors.white),
-                  const SizedBox(height: 14),
-                  const Text(
-                    'Hello, Flutter！',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '我已完成第14周入门任务',
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: Colors.white.withOpacity(0.85),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // ── 信息行 ──
-            Row(
-              children: [
-                _InfoChip(icon: Icons.person_rounded, label: '请改成你的姓名'),
-                const SizedBox(width: 10),
-                _InfoChip(icon: Icons.group_rounded, label: '第X小组'),
-              ],
-            ),
-
-            const SizedBox(height: 24),
-
-            // ── 打卡计数卡片 ──
-            AnimatedBuilder(
-              animation: _scaleAnim,
-              builder: (context, child) => Transform.scale(
-                scale: _scaleAnim.value,
-                child: child,
-              ),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 24),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.07),
-                      blurRadius: 16,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.check_circle_rounded,
-                            color: colorScheme.primary, size: 22),
-                        const SizedBox(width: 6),
-                        Text(
-                          '今日打卡次数',
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.grey[600],
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    Text(
-                      '$completedTasks',
-                      style: TextStyle(
-                        fontSize: 72,
-                        fontWeight: FontWeight.w800,
-                        color: colorScheme.primary,
-                        height: 1.0,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      _motivationText(),
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[500],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // ── 功能图标行 ──
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _FeatureIcon(icon: Icons.code_rounded, label: 'Dart'),
-                _FeatureIcon(icon: Icons.widgets_rounded, label: 'Widget'),
-                _FeatureIcon(icon: Icons.palette_rounded, label: '主题'),
-                _FeatureIcon(icon: Icons.cloud_upload_rounded, label: 'GitHub'),
-              ],
-            ),
-
-            const SizedBox(height: 20),
-
-            // ── 进度条 ──
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.trending_up_rounded,
-                          color: colorScheme.primary, size: 18),
-                      const SizedBox(width: 6),
-                      Text(
-                        '今日进度',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: Colors.grey[700],
-                          fontSize: 14,
-                        ),
-                      ),
-                      const Spacer(),
-                      Text(
-                        '${(completedTasks / 10 * 100).clamp(0, 100).toInt()}%',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          color: colorScheme.primary,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: LinearProgressIndicator(
-                      value: (completedTasks / 10).clamp(0.0, 1.0),
-                      minHeight: 10,
-                      backgroundColor: Colors.grey[200],
-                      valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    '目标 10 次，已完成 $completedTasks 次',
-                    style: TextStyle(fontSize: 12, color: Colors.grey[400]),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 90),
+            _buildHeader(),
+            const SizedBox(height: 16),
+            _buildProfileCard(),
+            const SizedBox(height: 16),
+            _buildBookStack(),
+            const SizedBox(height: 16),
+            _buildStatsCard(),
+            const SizedBox(height: 16),
+            _buildCategories(),
+            const SizedBox(height: 16),
+            _buildQuoteCard(),
+            const SizedBox(height: 16),
+            _buildFooter(),
+            const SizedBox(height: 80),
           ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: finishOneTask,
-        backgroundColor: const Color(0xFF6C63FF),
-        foregroundColor: Colors.white,
-        elevation: 6,
-        icon: const Icon(Icons.add_task_rounded),
-        label: const Text(
-          '完成打卡',
-          style: TextStyle(fontWeight: FontWeight.w700, letterSpacing: 0.5),
         ),
       ),
     );
   }
-}
 
-// ── 信息标签组件 ──
-class _InfoChip extends StatelessWidget {
-  final IconData icon;
-  final String label;
-
-  const _InfoChip({required this.icon, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
+  // --------------------------------------------------------
+  // 1. Header Banner
+  // --------------------------------------------------------
+  Widget _buildHeader() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(30),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFFD84315), Color(0xFFFF8F00)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(32),
+          bottomRight: Radius.circular(32),
+        ),
+      ),
+      padding: const EdgeInsets.fromLTRB(24, 48, 24, 32),
+      child: Column(
+        children: [
+          const Icon(Icons.menu_book_rounded, size: 56, color: Colors.white),
+          const SizedBox(height: 12),
+          const Text(
+            'Hello, Flutter!',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '第14周 · 阅读追踪任务',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.white.withValues(alpha: 0.9),
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  // --------------------------------------------------------
+  // 2. Profile Card (书签风格)
+  // --------------------------------------------------------
+  Widget _buildProfileCard() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Card(
+        child: IntrinsicHeight(
+          child: Row(
+            children: [
+              // Bookmark ribbon
+              Container(
+                width: 8,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppColors.warmBrown, AppColors.gold],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    bottomLeft: Radius.circular(16),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              // Profile content
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 22,
+                            backgroundColor: AppColors.amber100,
+                            child: const Icon(
+                              Icons.person,
+                              color: AppColors.warmBrown,
+                              size: 26,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '刘锦耀',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.deepBrown,
+                                  ),
+                                ),
+                                Text(
+                                  '阅读爱好者',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: AppColors.lightBrown,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          _buildInfoChip(Icons.badge, '学号 0115'),
+                          const SizedBox(width: 8),
+                          _buildInfoChip(Icons.group, '第07组'),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoChip(IconData icon, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: AppColors.parchment,
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: const Color(0xFF6C63FF)),
-          const SizedBox(width: 6),
+          Icon(icon, size: 14, color: AppColors.warmBrown),
+          const SizedBox(width: 4),
           Text(
             label,
             style: const TextStyle(
-              fontSize: 13,
+              fontSize: 12,
+              color: AppColors.lightBrown,
               fontWeight: FontWeight.w500,
-              color: Color(0xFF444444),
             ),
           ),
         ],
       ),
     );
   }
-}
 
-// ── 功能图标组件 ──
-class _FeatureIcon extends StatelessWidget {
-  final IconData icon;
-  final String label;
+  // --------------------------------------------------------
+  // 3. Book Stack (书堆可视化 - 核心特色)
+  // --------------------------------------------------------
+  Widget _buildBookStack() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Row(
+                children: [
+                  Icon(Icons.local_library,
+                      color: AppColors.warmBrown, size: 20),
+                  SizedBox(width: 8),
+                  Text(
+                    '我的书架',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.deepBrown,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              if (_booksRead == 0)
+                Container(
+                  height: 80,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: AppColors.parchment,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppColors.warmBrown.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      '还没有读过的书，快开始吧！',
+                      style: TextStyle(
+                          color: AppColors.lightBrown, fontSize: 14),
+                    ),
+                  ),
+                )
+              else
+                AnimatedSize(
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.easeOut,
+                  child: Column(
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: AppColors.warmBrown,
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 0,
+                        crossAxisAlignment: WrapCrossAlignment.end,
+                        children: List.generate(_booksRead, (index) {
+                          return AnimatedBuilder(
+                            animation: _scaleAnimation,
+                            builder: (context, child) {
+                              final bool isNew = index == _booksRead - 1;
+                              return Transform.scale(
+                                scale: isNew ? _scaleAnimation.value : 1.0,
+                                child: child,
+                              );
+                            },
+                            child: _buildSingleBook(index),
+                          );
+                        }),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
-  const _FeatureIcon({required this.icon, required this.label});
+  Widget _buildSingleBook(int index) {
+    final color = AppColors.bookColors[index % AppColors.bookColors.length];
+    final heights = [
+      36.0, 42.0, 38.0, 44.0, 40.0, 35.0, 41.0, 37.0, 43.0, 39.0
+    ];
+    final bookHeight = heights[index % heights.length];
+    final rotation = (index % 3 - 1) * 0.03;
 
-  @override
-  Widget build(BuildContext context) {
+    return Transform.rotate(
+      angle: rotation,
+      child: Container(
+        width: 28,
+        height: bookHeight,
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(3),
+            bottomLeft: Radius.circular(3),
+            topRight: Radius.circular(1),
+            bottomRight: Radius.circular(1),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: 0.3),
+              blurRadius: 2,
+              offset: const Offset(1, 1),
+            ),
+          ],
+        ),
+        child: Container(
+          margin: const EdgeInsets.only(left: 3),
+          width: 3,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(1),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // --------------------------------------------------------
+  // 4. Stats Card
+  // --------------------------------------------------------
+  Widget _buildStatsCard() {
+    final progress = _booksRead / _goal;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  AnimatedBuilder(
+                    animation: _scaleAnimation,
+                    builder: (context, child) {
+                      return Transform.scale(
+                        scale: _scaleAnimation.value,
+                        child: child,
+                      );
+                    },
+                    child: Text(
+                      '$_booksRead',
+                      style: const TextStyle(
+                        fontSize: 56,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.warmBrown,
+                        height: 1.0,
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8, left: 4),
+                    child: Text(
+                      '/ $_goal 本',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        color: AppColors.lightBrown,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: LinearProgressIndicator(
+                  value: progress,
+                  minHeight: 12,
+                  backgroundColor: AppColors.parchment,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    progress >= 1.0 ? AppColors.gold : AppColors.warmBrown,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                '${(progress * 100).toInt()}%',
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: AppColors.lightBrown,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 500),
+                child: Text(
+                  _getMotivationText(),
+                  key: ValueKey(_booksRead),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    color: AppColors.deepBrown,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // --------------------------------------------------------
+  // 5. Categories
+  // --------------------------------------------------------
+  Widget _buildCategories() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                '阅读分类',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.deepBrown,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildCategoryItem(
+                      Icons.auto_stories, '文学', AppColors.bookColors[0]),
+                  _buildCategoryItem(
+                      Icons.science, '科技', AppColors.bookColors[1]),
+                  _buildCategoryItem(
+                      Icons.history_edu, '历史', AppColors.bookColors[2]),
+                  _buildCategoryItem(
+                      Icons.psychology, '哲学', AppColors.bookColors[3]),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryItem(IconData icon, String label, Color color) {
     return Column(
       children: [
         Container(
-          width: 56,
-          height: 56,
+          width: 52,
+          height: 52,
           decoration: BoxDecoration(
-            color: const Color(0xFF6C63FF).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(16),
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(14),
           ),
-          child: Icon(icon, color: const Color(0xFF6C63FF), size: 26),
+          child: Icon(icon, color: color, size: 26),
         ),
         const SizedBox(height: 6),
         Text(
           label,
           style: const TextStyle(
-            fontSize: 12,
-            color: Color(0xFF666666),
+            fontSize: 13,
+            color: AppColors.lightBrown,
             fontWeight: FontWeight.w500,
           ),
         ),
       ],
+    );
+  }
+
+  // --------------------------------------------------------
+  // 6. Quote Card
+  // --------------------------------------------------------
+  Widget _buildQuoteCard() {
+    final quote = _getQuote();
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Card(
+        color: AppColors.parchment,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            children: [
+              const Icon(
+                Icons.format_quote,
+                size: 32,
+                color: AppColors.warmBrown,
+              ),
+              const SizedBox(height: 8),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 600),
+                child: Text(
+                  '"${quote['text']}"',
+                  key: ValueKey(_booksRead),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontStyle: FontStyle.italic,
+                    color: AppColors.deepBrown,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.warmBrown.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '— ${quote['author']}',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AppColors.lightBrown,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // --------------------------------------------------------
+  // 7. Footer
+  // --------------------------------------------------------
+  Widget _buildFooter() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        children: [
+          Divider(color: AppColors.warmBrown.withValues(alpha: 0.2)),
+          const SizedBox(height: 12),
+          Text(
+            '云南大学 · 创新实验 · 2025-2026学年',
+            style: TextStyle(
+              fontSize: 13,
+              color: AppColors.lightBrown.withValues(alpha: 0.7),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '刘锦耀 · 学号0115 · 第07组',
+            style: TextStyle(
+              fontSize: 12,
+              color: AppColors.lightBrown.withValues(alpha: 0.5),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
