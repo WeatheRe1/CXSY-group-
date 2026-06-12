@@ -33,3 +33,4 @@ git push
 | 姓名 | GitHub | 贡献 |
 |------|--------|------|
 | mingxi | [@youmaguijiang112](https://github.com/youmaguijiang112) | Flutter 界面个性化设计与开发 |
+| 刘锦耀 | [@usedare](https://github.com/usedare) | 温暖书卷风阅读追踪个性化 |
