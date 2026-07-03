@@ -10,6 +10,7 @@ build/
 .vscode/
 *.lock
 pubspec.lock
+flutter-run.*.log
 
 # Android
 android/app/build/
